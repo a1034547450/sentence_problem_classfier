@@ -1,3 +1,4 @@
+import pandas as pd
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
@@ -28,14 +29,15 @@ def get_args():
     parser.add_argument('--warm_up_rate',type=float,default=0.01)
     parser.add_argument('--is_cv',action='store_true')
     parser.add_argument('--cv_number',type= int ,default=1)
-    parser.add_argument('--test_path',type=str,default='./dataset/test.csv')
+    parser.add_argument('--test_path',type=str,default='./dataset/test1.csv')
     parser.add_argument('--cache_dir',type= str,default='./cache')
     parser.add_argument('--save_dir',type=str,default='./model_save')
     parser.add_argument('--out_dir',type=str,default='./result/')
-    parser.add_argument('--pretrain_model',type=str,default='bert-base-chinese')
+    parser.add_argument('--pretrain_model',type=str,default='./pretrained_model')
     parser.add_argument('--pooling',type=str,default='first-last-avg')
     parser.add_argument('--label_numbers',type=int,default=2)
     parser.add_argument('--log_interval',type=int,default=10)
+    parser.add_argument('--inference_model',type=str,default='./model_save/best_model_for_cv0')
     args = parser.parse_args()
     logger.info(args)
     return args
@@ -130,6 +132,54 @@ def parser_for_train(args):
     logger.info('current_cv:{} ending'.format(current_cv))
 
 
+def parser_for_inference(args):
+    config = BertConfig.from_pretrained(pretrained_model_name_or_path=args.pretrain_model, cache_dir=args.cache_dir)
+    tokenizer = BertTokenizer.from_pretrained(pretrained_model_name_or_path=args.pretrain_model,
+                                              cache_dir=args.cache_dir)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    convert_fn = partial(
+        convert_input_to_tensor,
+        tokenizer=tokenizer,
+        max_length=config.max_position_embeddings
+    )
+    model = SentenceClassffier(pretrain_model=args.pretrain_model, cache_dir=args.cache_dir,
+                                pooling=args.pooling,
+                                label_number=args.label_numbers)
+
+    state_dict = {k.replace('module.', ''):v for k, v in torch.load(args.inference_model,map_location=device).items()}
+    model.load_state_dict(state_dict)
+
+    model = model.to(device)
+    test_dataset = ContentDataSet(args.test_path,is_cv = False,mode ='test',trun_func=convert_fn)
+    test_dataloader = DataLoader(test_dataset,shuffle=False,batch_size=args.batch_size)
+
+    model.eval()
+
+    ids = []
+    labels = []
+    for batch_idx,batch_data in enumerate(test_dataloader):
+        if batch_idx % args.log_interval ==0:
+            logger.info('current process :{}'.format(batch_idx/len(test_dataloader)))
+
+        input_ids = batch_data['input_ids'].squeeze(1).to(device)
+        attention_mask = batch_data['attention_mask'].squeeze(1).to(device)
+        token_type_ids = batch_data['token_type_ids'].squeeze(1).to(device)
+        batch_ids = batch_data['id'].cpu().tolist()
+
+        ids.extend(batch_ids)
+        print(batch_ids)
+        logits = model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
+                                labels=None)
+        softmax = nn.Softmax(dim=-1)
+        logits = softmax(logits)
+        pred_labels = torch.argmax(logits, dim=-1)
+        pred_labels = pred_labels.cpu().tolist()
+        labels.extend(pred_labels)
+
+    df = pd.DataFrame({'id':ids,'label':labels})
+    df.to_csv(osp.join(args.out_dir,'result.csv'),encoding='utf-8',index=False)
+
+
 if __name__== '__main__':
     args = get_args()
-    parser_for_train(args)
+    parser_for_inference(args)

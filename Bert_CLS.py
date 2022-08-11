@@ -2,6 +2,7 @@ from transformers import BertModel,BertConfig
 import torch.nn as nn
 import torch
 
+
 class SentenceClassffier(nn.Module):
     def __init__(self,pretrain_model,cache_dir,pooling = 'first-last-avg',label_number = 2):
         super(SentenceClassffier, self).__init__()
@@ -12,6 +13,7 @@ class SentenceClassffier(nn.Module):
         self.label_number = label_number
         self.fn = nn.Linear(self.config.hidden_size,self.label_number)
         self.loss = nn.CrossEntropyLoss()
+        # self.lstm = nn.LSTM()
         ## todo
             ## 添加lstm层 捕捉上下文语义信息
             ### 或者使用cnn提取local信息

@@ -5,7 +5,7 @@ import numpy as np
 from transformers import BertTokenizer
 
 def read_csv(file_path):
-    df = pd.read_csv(file_path,delimiter='\t',index_col=0)
+    df = pd.read_csv(file_path,delimiter='\t')
     return df
 
 
@@ -16,6 +16,7 @@ class ContentDataSet(Dataset):
             self.mode = mode
             self.current_k = current_k
             self.trun_func = trun_func
+            self.ids = self.data['id'].tolist()
             if self.mode !='test':
                 self.labels = self.data['label'].tolist()
 
@@ -45,7 +46,9 @@ class ContentDataSet(Dataset):
     def __getitem__(self, item):
         example = {}
         text = self.texts[item]
+        id = self.ids[item]
         example['text'] =text
+        example['id'] = id
         if self.mode !='test':
             label = self.labels[item]
             example['label'] = label
@@ -60,12 +63,14 @@ def convert_input_to_tensor(example,tokenizer,max_length):
 
     text = example['text']
     encoded_text = tokenizer(text,max_length =max_length,return_tensors ='pt',truncation =True,padding ='max_length')
-    label = torch.tensor(example['label'],dtype=torch.long)
     sample = {}
     sample['input_ids'] = encoded_text['input_ids']
     sample['attention_mask'] = encoded_text['attention_mask']
     sample['token_type_ids'] = encoded_text['token_type_ids']
-    sample['label'] = label
+    sample['id'] = example['id']
+    if 'label' in example.keys():
+        label = torch.tensor(example['label'], dtype=torch.long)
+        sample['label'] = label
     return sample
 
 
