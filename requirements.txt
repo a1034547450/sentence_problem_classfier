@@ -1,0 +1,62 @@
+async-generator==1.10
+attrs==21.4.0
+beautifulsoup4 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_croot-cdiouih5/beautifulsoup4_1650462164803/work
+brotlipy==0.7.0
+certifi @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_83242e7e-f82d-4a71-8ef2-9d71d212d249gu_wxmeq/croots/recipe/certifi_1655968827803/work/certifi
+cffi @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/croot-2p6q7e2r/cffi_1642701115063/work
+charset-normalizer==2.0.12
+click @ file:///opt/concourse/worker/volumes/live/42b55757-67b9-4a67-4429-e65a7264b929/volume/click_1646056605766/work
+cryptography==37.0.2
+cycler==0.11.0
+data==0.4
+decorator==5.1.1
+filelock @ file:///opt/conda/conda-bld/filelock_1647002191454/work
+flow==0.0.1
+fonttools==4.33.3
+funcsigs==1.0.2
+h11==0.13.0
+huggingface-hub @ file:///tmp/build/80754af9/huggingface_hub_1639662742275/work
+idna @ file:///tmp/build/80754af9/idna_1637925883363/work
+importlib-metadata @ file:///opt/concourse/worker/volumes/live/4e1a3384-472f-4bcb-7776-cb0076aaea40/volume/importlib-metadata_1648562431336/work
+joblib @ file:///tmp/build/80754af9/joblib_1635411271373/work
+kiwisolver==1.4.3
+matplotlib==3.5.2
+mkl-fft==1.3.0
+mkl-random==1.1.1
+mkl-service==2.3.0
+numpy==1.21.6
+outcome==1.1.0
+packaging @ file:///tmp/build/80754af9/packaging_1637314298585/work
+pandas==1.3.5
+Pillow==9.2.0
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
+pyparsing==3.0.9
+PySocks @ file:///opt/concourse/worker/volumes/live/ef943889-94fc-4539-798d-461c60b77804/volume/pysocks_1605305801690/work
+python-dateutil==2.8.2
+pytz==2022.1
+PyYAML==6.0
+regex @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_978efa21-43f5-4f43-9f25-acd8393817ddce2xcjaf/croots/recipe/regex_1658257186496/work
+requests @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_516b78ce-034d-4395-b9b5-1d78c2847384qtnol99l/croots/recipe/requests_1657734628886/work
+sacremoses @ file:///tmp/build/80754af9/sacremoses_1633107328213/work
+scikit-learn==1.0.2
+scipy==1.7.3
+selenium==4.2.0
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+sniffio==1.2.0
+sortedcontainers==2.4.0
+soupsieve @ file:///tmp/build/80754af9/soupsieve_1636706018808/work
+style==1.1.0
+threadpoolctl==3.1.0
+tokenizers @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_268e8965-102b-48a5-a916-a216550453a11s7pxtzt/croots/recipe/tokenizers_1651822590419/work
+torch @ file:///opt/concourse/worker/volumes/live/11e8f1df-b219-4bb1-5397-3a9589bb82c1/volume/pytorch_1614404301885/work
+torchvision @ file:///opt/concourse/worker/volumes/live/4f5a83ed-467a-4726-57b4-f7cdab6bb897/volume/torchvision_1622219705983/work
+tqdm @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_6cb3db64-b7e1-4db2-ab0b-f944920e5367lekntvc5/croots/recipe/tqdm_1650891088614/work
+transformers @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_4f99ae88-8225-4c3d-897d-94b945b2c335tygijrzy/croots/recipe/transformers_1651834322264/work
+trio==0.21.0
+trio-websocket==0.9.2
+typing_extensions==4.2.0
+update==0.0.1
+urllib3 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_53dwuk2xkk/croots/recipe/urllib3_1659110467968/work
+wsproto==1.1.0
+zipp @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_b279673d-f037-44c7-8773-c5a6b6f51037d3wfr9cq/croots/recipe/zipp_1652341773612/work
