@@ -127,6 +127,7 @@ def parser_for_train(args):
             metrics = eval(model,dev_dataloader,device)
             current_f1 = metrics['weighted_avg_f1']
             if current_f1 > best_f1:
+                best_f1 = current_f1
                 torch.save(model.state_dict(),osp.join(args.save_dir,'best_model_for_cv{}'.format(current_cv)))
 
     logger.info('current_cv:{} ending'.format(current_cv))
