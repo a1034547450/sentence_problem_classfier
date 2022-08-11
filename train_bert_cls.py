@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('--epochs',type= int,default=5)
     parser.add_argument('--learning_rate',type=float,default=1e-5)
     parser.add_argument('--warm_up_rate',type=float,default=0.01)
-    parser.add_argument('--is_cv',action='store_false')
+    parser.add_argument('--is_cv',action='store_true')
     parser.add_argument('--cv_number',type= int ,default=1)
     parser.add_argument('--test_path',type=str,default='./dataset/test.csv')
     parser.add_argument('--cache_dir',type= str,default='./cache')
