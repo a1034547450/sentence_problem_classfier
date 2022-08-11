@@ -63,12 +63,12 @@ def eval(model,dev_loader,device):
         pred_labels = pred_labels.cpu().tolist()
         y_pred.extend(pred_labels)
     result = classification_report(y_true,y_pred,output_dict=True)
-
+    logger.info(result)
     metrics_dict = {}
     metrics_dict['loss'] = sum(losses)/len(losses)
     metrics_dict['accuracy'] = result['accuracy']
-    metrics_dict['macro_avg_f1'] = result['macro avg']['f1']
-    metrics_dict['weighted_avg_f1'] = result['weighted avg']['f1']
+    metrics_dict['macro_avg_f1'] = result['macro avg']['f1-score']
+    metrics_dict['weighted_avg_f1'] = result['weighted avg']['f1-score']
     return metrics_dict
 
 
@@ -103,29 +103,29 @@ def parser_for_train(args):
 
         best_f1 = 0.0
         for epoch in range(args.epochs):
-            # model.train()
-            # losses = []
-            # for batch_idx, batch_data in enumerate(train_dataloader):
-            #     input_ids = batch_data['input_ids'].squeeze(1).to(device)
-            #     attention_mask = batch_data['attention_mask'].squeeze(1).to(device)
-            #     token_type_ids = batch_data['token_type_ids'].squeeze(1).to(device)
-            #     batch_labels = batch_data['label'].to(device)
-            #     loss, _ = model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
-            #                     labels=batch_labels)
-            #     optimizer.zero_grad()
-            #     loss.backward()
-            #     optimizer.step()
-            #     scheduler.step()
-            #
-            #     losses.append(loss.item())
-            #     if batch_idx %args.log_interval ==0 :
-            #         logger.info('current_cv:{},current_epoch:{},current_step:{},current_step_loss:{}'.format(current_cv,epoch,batch_idx,loss.item()))
+            model.train()
+            losses = []
+            for batch_idx, batch_data in enumerate(train_dataloader):
+                input_ids = batch_data['input_ids'].squeeze(1).to(device)
+                attention_mask = batch_data['attention_mask'].squeeze(1).to(device)
+                token_type_ids = batch_data['token_type_ids'].squeeze(1).to(device)
+                batch_labels = batch_data['label'].to(device)
+                loss, _ = model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
+                                labels=batch_labels)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                scheduler.step()
 
-            # logger.info('current_cv:{},current_epoch:{},current_epoch_loss:{}'.format(current_cv,epoch,sum(losses)/len(losses)))
+                losses.append(loss.item())
+                if batch_idx %args.log_interval ==0 :
+                    logger.info('current_cv:{},current_epoch:{},current_step:{},current_step_loss:{}'.format(current_cv,epoch,batch_idx,loss.item()))
+
+            logger.info('current_cv:{},current_epoch:{},current_epoch_loss:{}'.format(current_cv,epoch,sum(losses)/len(losses)))
             metrics = eval(model,dev_dataloader,device)
-            # current_f1 = metrics['weighted_avg_f1']
-            # if current_f1 > best_f1:
-            #     torch.save(model.state_dict(),osp.join(args.save_dir,'best_model_for_cv{}'.format(current_cv)))
+            current_f1 = metrics['weighted_avg_f1']
+            if current_f1 > best_f1:
+                torch.save(model.state_dict(),osp.join(args.save_dir,'best_model_for_cv{}'.format(current_cv)))
 
     logger.info('current_cv:{} ending'.format(current_cv))
 

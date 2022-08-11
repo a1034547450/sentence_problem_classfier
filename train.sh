@@ -4,7 +4,7 @@ python train_bert_cls.py \
     --epochs=10 \
     --is_cv \
     --cv_number=5 \
-    --batch_size=32 \
+    --batch_size=2 \
     --train_path='./dataset/train.csv' \
     --pooling='first-last-avg' \
     --log_interval=10 \

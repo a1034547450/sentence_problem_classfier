@@ -43,4 +43,4 @@ class SentenceClassffier(nn.Module):
         else:
             pred = self.act(self.fn(logits))
             loss = self.loss(pred,labels)
-            return (loss,logits)
+            return (loss,pred)
