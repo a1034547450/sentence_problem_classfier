@@ -1,7 +1,7 @@
 from transformers import BertModel,BertConfig
 import torch.nn as nn
 import torch
-
+from torch.autograd import Variable
 
 class SentenceClassffier(nn.Module):
     def __init__(self,pretrain_model,cache_dir,pooling = 'first-last-avg',label_number = 2):
@@ -13,7 +13,8 @@ class SentenceClassffier(nn.Module):
         self.label_number = label_number
         self.fn = nn.Linear(self.config.hidden_size,self.label_number)
         self.loss = nn.CrossEntropyLoss()
-        # self.lstm = nn.LSTM()
+        self.hidden_dim = self.config.hidden_size//2
+        self.lstm = nn.LSTM(self.config.hidden_size,self.hidden_dim,bias=True,bidirectional=True,batch_first=True)
         ## todo
             ## 添加lstm层 捕捉上下文语义信息
             ### 或者使用cnn提取local信息
@@ -28,16 +29,32 @@ class SentenceClassffier(nn.Module):
             logits =  out.pooler_output  # [batch, 768]
 
         if self.pooling == 'last-avg':
-            last = out.last_hidden_state.transpose(1, 2)  # [batch, 768, seqlen]
-            logits =  torch.avg_pool1d(last, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
+            # last = out.last_hidden_state.transpose(1, 2)  # [batch, 768, seqlen]
+            # logits =  torch.avg_pool1d(last, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
+            last = out.last_hidden_state
+            bsz = last.shape[0]
+            hidden  = self.rand_init_hidden(bsz)
+            logits,_ = self.lstm(last,hidden)
+            logits = logits[:,-1]
+
+
 
         if self.pooling == 'first-last-avg':
-            first = out.hidden_states[1].transpose(1, 2)  # [batch, 768, seqlen]
-            last = out.hidden_states[-1].transpose(1, 2)  # [batch, 768, seqlen]
-            first_avg = torch.avg_pool1d(first, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
-            last_avg = torch.avg_pool1d(last, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
-            avg = torch.cat((first_avg.unsqueeze(1), last_avg.unsqueeze(1)), dim=1)  # [batch, 2, 768]
-            logits =  torch.avg_pool1d(avg.transpose(1, 2), kernel_size=2).squeeze(-1)  # [batch, 768]
+            # first = out.hidden_states[1].transpose(1, 2)  # [batch, 768, seqlen]
+            # last = out.hidden_states[-1].transpose(1, 2)  # [batch, 768, seqlen]
+            # first_avg = torch.avg_pool1d(first, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
+            # last_avg = torch.avg_pool1d(last, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
+            # avg = torch.cat((first_avg.unsqueeze(1), last_avg.unsqueeze(1)), dim=1)  # [batch, 2, 768]
+            # logits =  torch.avg_pool1d(avg.transpose(1, 2), kernel_size=2).squeeze(-1)  # [batch, 768]
+
+            first  = out.hidden_states[1]
+            last = out.hidden_states[-1]
+            features = first+last
+            bsz = features.shape[0]
+            hidden = self.rand_init_hidden(bsz)
+            logits, _ = self.lstm(features, hidden)
+            logits = logits[:, -1]
+
 
         if  labels is None:
             pred = self.act(self.fn(logits))
@@ -46,3 +63,8 @@ class SentenceClassffier(nn.Module):
             pred = self.act(self.fn(logits))
             loss = self.loss(pred,labels)
             return (loss,pred)
+
+    def rand_init_hidden(self,batch_size):
+        return Variable(
+            torch.randn(2, batch_size, self.hidden_dim)), Variable(
+            torch.randn(2, batch_size, self.hidden_dim))

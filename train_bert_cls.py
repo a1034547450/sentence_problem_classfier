@@ -38,6 +38,7 @@ def get_args():
     parser.add_argument('--label_numbers',type=int,default=2)
     parser.add_argument('--log_interval',type=int,default=10)
     parser.add_argument('--inference_model',type=str,default='./model_save/best_model_for_cv0')
+    parser.add_argument('--inference',action='store_true')
     args = parser.parse_args()
     logger.info(args)
     return args
@@ -99,8 +100,7 @@ def parser_for_train(args):
                                        current_k=current_cv, trun_func=convert_fn)
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
         dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size, shuffle=True)
-        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=len(
-            train_dataloader) * args.epochs * args.warm_up_rate, num_training_steps=len(train_dataloader) * args.epochs)
+        scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=len(train_dataloader) * args.epochs * args.warm_up_rate, num_training_steps=len(train_dataloader) * args.epochs)
 
 
         best_f1 = 0.0
@@ -167,7 +167,6 @@ def parser_for_inference(args):
         batch_ids = batch_data['id'].cpu().tolist()
 
         ids.extend(batch_ids)
-        print(batch_ids)
         logits = model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
                                 labels=None)
         softmax = nn.Softmax(dim=-1)
@@ -182,4 +181,7 @@ def parser_for_inference(args):
 
 if __name__== '__main__':
     args = get_args()
-    parser_for_inference(args)
+    if args.inference:
+        parser_for_inference(args)
+    else :
+        parser_for_train(args)
