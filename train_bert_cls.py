@@ -85,8 +85,8 @@ def parser_for_train(args):
         tokenizer = tokenizer,
         max_length = config.max_position_embeddings
     )
-
-    for current_cv in range(args.cv_number):
+    total_cv_number = args.cv_number if args.is_cv else 1
+    for current_cv in range(total_cv_number):
         logger.info('current_cv:{} starting '.format(current_cv))
 
         model = SentenceClassffier(pretrain_model=args.pretrain_model, cache_dir=args.cache_dir,
