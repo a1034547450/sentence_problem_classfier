@@ -35,7 +35,7 @@ class SentenceClassffier(nn.Module):
             # logits =  torch.avg_pool1d(last, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
             last = out.last_hidden_state
             bsz = last.shape[0]
-            hidden  = self.rand_init_hidden(bsz)
+            hidden  = self.rand_init_hidden(bsz,last.device)
             logits,_ = self.lstm(last,hidden)
             logits = logits.transpose(1,2)
             logits = torch.avg_pool1d(logits, kernel_size=logits.shape[-1]).squeeze(-1)
@@ -54,7 +54,7 @@ class SentenceClassffier(nn.Module):
             last = out.hidden_states[-1]
             features = first+last
             bsz = features.shape[0]
-            hidden = self.rand_init_hidden(bsz)
+            hidden = self.rand_init_hidden(bsz,features.device)
             logits, _ = self.lstm(features, hidden)
             logits = logits.transpose(1,2)
             logits =  torch.avg_pool1d(logits, kernel_size=logits.shape[-1]).squeeze(-1)
@@ -67,7 +67,7 @@ class SentenceClassffier(nn.Module):
             loss = self.loss(pred,labels)
             return (loss,pred)
 
-    def rand_init_hidden(self,batch_size):
+    def rand_init_hidden(self,batch_size,device):
         return Variable(
-            torch.randn(2, batch_size, self.hidden_dim)), Variable(
-            torch.randn(2, batch_size, self.hidden_dim))
+            torch.randn(2, batch_size, self.hidden_dim).to(device)), Variable(
+            torch.randn(2, batch_size, self.hidden_dim).to(device))
