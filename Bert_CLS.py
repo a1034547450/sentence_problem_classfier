@@ -2,6 +2,7 @@ from transformers import BertModel,BertConfig
 import torch.nn as nn
 import torch
 from torch.autograd import Variable
+from FocalLoss import FocalLoss
 
 class SentenceClassffier(nn.Module):
     def __init__(self,pretrain_model,cache_dir,pooling = 'first-last-avg',label_number = 2):
@@ -12,7 +13,8 @@ class SentenceClassffier(nn.Module):
         self.act = nn.LeakyReLU()
         self.label_number = label_number
         self.fn = nn.Linear(self.config.hidden_size,self.label_number)
-        self.loss = nn.CrossEntropyLoss()
+        # self.loss = nn.CrossEntropyLoss()
+        self.loss = FocalLoss(self.label_number,alpha=torch.tensor([0.7,0.3]))
         self.hidden_dim = self.config.hidden_size//2
         self.lstm = nn.LSTM(self.config.hidden_size,self.hidden_dim,bias=True,bidirectional=True,batch_first=True)
         ## todo
@@ -35,7 +37,8 @@ class SentenceClassffier(nn.Module):
             bsz = last.shape[0]
             hidden  = self.rand_init_hidden(bsz)
             logits,_ = self.lstm(last,hidden)
-            logits = logits[:,-1]
+            logits = logits.transpose(1,2)
+            logits = torch.avg_pool1d(logits, kernel_size=logits.shape[-1]).squeeze(-1)
 
 
 
@@ -53,8 +56,8 @@ class SentenceClassffier(nn.Module):
             bsz = features.shape[0]
             hidden = self.rand_init_hidden(bsz)
             logits, _ = self.lstm(features, hidden)
-            logits = logits[:, -1]
-
+            logits = logits.transpose(1,2)
+            logits =  torch.avg_pool1d(logits, kernel_size=logits.shape[-1]).squeeze(-1)
 
         if  labels is None:
             pred = self.act(self.fn(logits))
