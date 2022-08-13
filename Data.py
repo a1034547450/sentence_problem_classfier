@@ -20,7 +20,7 @@ class ContentDataSet(Dataset):
             if self.mode !='test':
                 self.labels = self.data['label'].tolist()
 
-            if  is_cv and cv_number > 0:
+            if  is_cv and cv_number > 1:
                 fold_length = len(self.texts) // cv_number
                 fold_sizes = [0]+[fold_length]*(cv_number-1)
                 fold_sizes = np.cumsum(fold_sizes)
@@ -41,7 +41,7 @@ class ContentDataSet(Dataset):
                     if self.mode =='dev':
                         self.labels = self.labels[fold_sizes[current_k]:fold_sizes[current_k+1]]
                         self.texts = self.texts[fold_sizes[current_k]:fold_sizes[current_k + 1]]
-
+            print(len(self.texts))
 
     def __getitem__(self, item):
         example = {}

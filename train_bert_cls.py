@@ -14,7 +14,7 @@ from functools import partial
 from transformers import BertTokenizer,AdamW,get_linear_schedule_with_warmup,BertConfig
 import os
 import os.path as osp
-
+from FGM import FGM
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -94,16 +94,20 @@ def parser_for_train(args):
                                    label_number=args.label_numbers)
         model = model.to(device)
         optimizer = AdamW(model.parameters(), lr=args.learning_rate)
-        dev_dataset = ContentDataSet(args.train_path, mode='dev', is_cv=True, cv_number=args.cv_number,
+        dev_dataset = ContentDataSet(args.train_path, mode='dev', is_cv=args.is_cv, cv_number=args.cv_number,
                                      current_k=current_cv, trun_func=convert_fn)
-        train_dataset = ContentDataSet(args.train_path, mode='train', is_cv=True, cv_number=args.cv_number,
+        train_dataset = ContentDataSet(args.train_path, mode='train', is_cv=args.is_cv, cv_number=args.cv_number,
                                        current_k=current_cv, trun_func=convert_fn)
+
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
         dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size, shuffle=True)
         scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=len(train_dataloader) * args.epochs * args.warm_up_rate, num_training_steps=len(train_dataloader) * args.epochs)
 
 
         best_f1 = 0.0
+
+        # for fgm
+        # fgm = FGM(model)
         for epoch in range(args.epochs):
             model.train()
             losses = []
@@ -116,6 +120,13 @@ def parser_for_train(args):
                                 labels=batch_labels)
                 optimizer.zero_grad()
                 loss.backward()
+                # ###fgm insert
+                # fgm.attack()
+                # loss_adv, _ = model(input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
+                #                 labels=batch_labels)
+                # loss_adv.backward()
+                # fgm.restore()
+                # ### fgm ending
                 optimizer.step()
                 scheduler.step()
 
@@ -177,7 +188,7 @@ def parser_for_inference(args):
         labels.extend(pred_labels)
 
     df = pd.DataFrame({'id':ids,'label':labels})
-    df.to_csv(osp.join(args.out_dir,'result.csv'),encoding='utf-8',index=False)
+    df.to_csv(osp.join(args.out_dir,'result.csv'),encoding='utf-8',index=False,sep='\t')
 
 
 if __name__== '__main__':

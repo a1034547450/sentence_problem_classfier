@@ -13,8 +13,8 @@ class SentenceClassffier(nn.Module):
         self.act = nn.LeakyReLU()
         self.label_number = label_number
         self.fn = nn.Linear(self.config.hidden_size,self.label_number)
-        # self.loss = nn.CrossEntropyLoss()
-        self.loss = FocalLoss(self.label_number,alpha=torch.tensor([0.7,0.3]))
+        self.loss = nn.CrossEntropyLoss(weight=torch.tensor([0.7,0.3]))
+        #self.loss = FocalLoss(self.label_number,alpha=torch.tensor([0.7,0.3]))
         self.hidden_dim = self.config.hidden_size//2
         self.lstm = nn.LSTM(self.config.hidden_size,self.hidden_dim,bias=True,bidirectional=True,batch_first=True)
         ## todo
@@ -43,21 +43,21 @@ class SentenceClassffier(nn.Module):
 
 
         if self.pooling == 'first-last-avg':
-            # first = out.hidden_states[1].transpose(1, 2)  # [batch, 768, seqlen]
-            # last = out.hidden_states[-1].transpose(1, 2)  # [batch, 768, seqlen]
-            # first_avg = torch.avg_pool1d(first, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
-            # last_avg = torch.avg_pool1d(last, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
-            # avg = torch.cat((first_avg.unsqueeze(1), last_avg.unsqueeze(1)), dim=1)  # [batch, 2, 768]
-            # logits =  torch.avg_pool1d(avg.transpose(1, 2), kernel_size=2).squeeze(-1)  # [batch, 768]
-
-            first  = out.hidden_states[1]
-            last = out.hidden_states[-1]
-            features = first+last
-            bsz = features.shape[0]
-            hidden = self.rand_init_hidden(bsz,features.device)
-            logits, _ = self.lstm(features, hidden)
-            logits = logits.transpose(1,2)
-            logits =  torch.avg_pool1d(logits, kernel_size=logits.shape[-1]).squeeze(-1)
+            first = out.hidden_states[1].transpose(1, 2)  # [batch, 768, seqlen]
+            last = out.hidden_states[-1].transpose(1, 2)  # [batch, 768, seqlen]
+            first_avg = torch.avg_pool1d(first, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
+            last_avg = torch.avg_pool1d(last, kernel_size=last.shape[-1]).squeeze(-1)  # [batch, 768]
+            avg = torch.cat((first_avg.unsqueeze(1), last_avg.unsqueeze(1)), dim=1)  # [batch, 2, 768]
+            logits =  torch.avg_pool1d(avg.transpose(1, 2), kernel_size=2).squeeze(-1)  # [batch, 768]
+            #
+            # first  = out.hidden_states[1]
+            # last = out.hidden_states[-1]
+            # features = first+last
+            # bsz = features.shape[0]
+            # hidden = self.rand_init_hidden(bsz,features.device)
+            # logits, _ = self.lstm(features, hidden)
+            # logits = logits.transpose(1,2)
+            # logits =  torch.avg_pool1d(logits, kernel_size=logits.shape[-1]).squeeze(-1)
 
         if  labels is None:
             pred = self.act(self.fn(logits))
